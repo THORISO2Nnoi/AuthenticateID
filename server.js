@@ -1,36 +1,37 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const cors = require('cors');
+const userRoutes = require('./routes/userRoutes');
+
+dotenv.config();
 
 const app = express();
+
+// Middleware order is very important
 app.use(cors());
-app.use(express.json());
+app.use(express.json());  // parse JSON bodies
 
-const hardcodedUser = {
-  idNumber: "1234567890123",
-  firstName: "John",
-  lastName: "Doe",
-  dob: "1990-01-01"
-};
-
-app.post('/api/verify', (req, res) => {
-  const { idNumber, firstName, lastName, dob } = req.body;
-
-  if (!idNumber || !firstName || !lastName || !dob) {
-    return res.status(400).json({ success: false, message: "Missing fields" });
-  }
-
-  if (
-    idNumber === hardcodedUser.idNumber &&
-    firstName.toLowerCase() === hardcodedUser.firstName.toLowerCase() &&
-    lastName.toLowerCase() === hardcodedUser.lastName.toLowerCase() &&
-    dob === hardcodedUser.dob
-  ) {
-    return res.status(200).json({ success: true, message: "User verified successfully" });
-  } else {
-    return res.status(401).json({ success: false, message: "Details do not match" });
-  }
+// Logging middleware to debug incoming requests
+app.use((req, res, next) => {
+  console.log('Incoming request:', req.method, req.url);
+  console.log('Request body:', req.body);
+  next();
 });
 
+// Routes
+app.use('/api', userRoutes);
+
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, {
+  // these options are deprecated and no longer needed with current drivers
+  // useNewUrlParser: true,
+  // useUnifiedTopology: true,
+})
+.then(() => console.log("MongoDB connected"))
+.catch((err) => console.error("MongoDB connection failed:", err));
+
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
