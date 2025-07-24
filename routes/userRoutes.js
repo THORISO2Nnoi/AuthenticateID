@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 
-// ✅ POST /api/register — add user to DB
+// Register user
 router.post('/register', async (req, res) => {
   try {
     const { idNumber, firstName, lastName, dob } = req.body;
@@ -11,28 +11,22 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing fields" });
     }
 
-    const existing = await User.findOne({ idNumber });
-    if (existing) {
+    const existingUser = await User.findOne({ idNumber });
+    if (existingUser) {
       return res.status(409).json({ success: false, message: "User already exists" });
     }
 
-    const newUser = new User({
-      idNumber,
-      firstName,
-      lastName,
-      dob: new Date(dob)  // store as actual Date
-    });
-
+    const newUser = new User({ idNumber, firstName, lastName, dob: new Date(dob) });
     await newUser.save();
-    res.status(201).json({ success: true, message: "User registered", user: newUser });
 
+    res.status(201).json({ success: true, message: "User registered", user: newUser });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Register error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// ✅ POST /api/verify — check if user exists
+// Verify user
 router.post('/verify', async (req, res) => {
   try {
     const { idNumber, firstName, lastName, dob } = req.body;
@@ -45,7 +39,7 @@ router.post('/verify', async (req, res) => {
       idNumber,
       firstName,
       lastName,
-      dob: new Date(dob) // match Date format
+      dob: new Date(dob)
     });
 
     if (!user) {
@@ -53,7 +47,6 @@ router.post('/verify', async (req, res) => {
     }
 
     res.json({ success: true, message: "User verified", user });
-
   } catch (error) {
     console.error("Verify error:", error);
     res.status(500).json({ success: false, message: "Server error" });
