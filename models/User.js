@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
-  idNumber: { type: String, required: true, unique: true },
+const UserSchema = new mongoose.Schema({
+  idNumber: { type: String, required: true },
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
-  dob: { type: String, required: true } // Format YYYY-MM-DD
+  dob: { type: Date, required: true }
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', UserSchema);
